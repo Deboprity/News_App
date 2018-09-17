@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minHeight="80dp">
+
+    <TextView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:id="@+id/section_info"
+        android:gravity="center"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        tools:background="@color/colorPrimary"
+        tools:text="sample"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="10dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:id="@+id/news_info"
+            android:gravity="left"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:textColor="@color/textColorNewsDetails"
+            tools:text="This is a sample news headline"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:id="@+id/date_info"
+            android:gravity="left"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:textColor="@color/textColorNewsDate"
+            tools:text="Sample Date"/>
+    </LinearLayout>
+
+
+</LinearLayout>
