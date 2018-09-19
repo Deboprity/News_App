@@ -6,10 +6,6 @@ import android.util.Log;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Helper methods related to requesting and receiving earthquake data from USGS.
@@ -25,7 +21,7 @@ public final class QueryUtils {
      * Returns new URL object from the given string URL.
      */
     public static URL createUrl(String stringUrl) {
-        URL url = null;
+        URL url;
 
         //stringUrl = stringUrl + "&starttime="+"2018-01-01"+"&endtime="+getCurrentDate()+"&minmagnitude=6.2";
         try {
@@ -40,7 +36,7 @@ public final class QueryUtils {
 
     public static int getSectionColor(Context context, String secName) {
         Log.d(TAG, "getSectionColor: started");
-        int sectionColorResourceId = 0;
+        int sectionColorResourceId;
         switch (secName) {
             case "News":
                 sectionColorResourceId = R.color.News;

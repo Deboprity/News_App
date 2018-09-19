@@ -18,31 +18,16 @@ public class News {
         return sectionName;
     }
 
-    public void setSectionName(String sectionName) {
-        this.sectionName = sectionName;
-    }
-
     public String getWebTitle() {
         return webTitle;
-    }
-
-    public void setWebTitle(String webTitle) {
-        this.webTitle = webTitle;
     }
 
     public String getWebPublicationDate() {
         return webPublicationDate;
     }
 
-    public void setWebPublicationDate(String webPublicationDate) {
-        this.webPublicationDate = webPublicationDate;
-    }
-
     public String getWebURL() {
         return webURL;
     }
 
-    public void setWebURL(String webURL) {
-        this.webURL = webURL;
-    }
 }

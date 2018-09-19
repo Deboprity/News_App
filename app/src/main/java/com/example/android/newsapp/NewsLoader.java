@@ -20,12 +20,19 @@ import java.util.List;
 
 public class NewsLoader extends AsyncTaskLoader<List<News>> {
 
-    public static final String TAG = NewsLoader.class.getName();
+    private static final String TAG = NewsLoader.class.getName();
+
+    private static final String JSON_RESP_OBJ_NAME = "response";
+    private static final String JSON_RESULT_NAME = "results";
+    private static final String JSON_SECTION_NAME = "sectionName";
+    private static final String JSON_WEB_TITLE_NAME = "webTitle";
+    private static final String JSON_WEB_PUBLICATION_DATE_NAME = "webPublicationDate";
+    private static final String JSON_WEB_URL_NAME = "webUrl";
 
     /** Query URL */
     private String mUrl;
 
-    public NewsLoader(Context context, String url) {
+    NewsLoader(Context context, String url) {
         super(context);
         mUrl = url;
     }
@@ -38,31 +45,7 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
         Log.d(TAG, "onStartLoading: ended");
     }
 
-    /**
-     * Called on a worker thread to perform the actual load and to return
-     * the result of the load operation.
-     * <p>
-     * Implementations should not deliver the result directly, but should return them
-     * from this method, which will eventually end up calling {@link #deliverResult} on
-     * the UI thread.  If implementations need to process the results on the UI thread
-     * they may override {@link #deliverResult} and do so there.
-     * <p>
-     * To support cancellation, this method should periodically check the value of
-     * {@link #isLoadInBackgroundCanceled} and terminate when it returns true.
-     * Subclasses may also override {@link #cancelLoadInBackground} to interrupt the load
-     * directly instead of polling {@link #isLoadInBackgroundCanceled}.
-     * <p>
-     * When the load is canceled, this method may either return normally or throw
-     * {@link }.  In either case, the {@link } will
-     * call {@link #onCanceled} to perform post-cancellation cleanup and to dispose of the
-     * result object, if any.
-     *
-     * @return The result of the load operation.
-     * @throws  if the load is canceled during execution.
-     * @see #isLoadInBackgroundCanceled
-     * @see #cancelLoadInBackground
-     * @see #onCanceled
-     */
+
     @Override
     public List<News> loadInBackground() {
         Log.d(TAG, "loadInBackground: started");
@@ -76,7 +59,7 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
         // Create URL object
         URL url = QueryUtils.createUrl(mUrl);
 
-        String JSONresponse = "";
+        String JSONresponse;
 
         // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way the JSON
         // is formatted, a JSONException exception object will be thrown.
@@ -85,17 +68,19 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
             JSONresponse = makeHttpRequest(url);
 
             JSONObject root = new JSONObject(JSONresponse);
+            
+            JSONObject responseObj = root.getJSONObject(JSON_RESP_OBJ_NAME);
 
-            JSONArray newsArray = root.getJSONArray("results");
-            Log.d(TAG, "newsArray.length() : "+newsArray.length());
+            JSONArray newsArray = responseObj.getJSONArray(JSON_RESULT_NAME);
+
+            Log.d(TAG, "No. of news returned : "+newsArray.length());
             for (int i = 0; i < newsArray.length(); i++) {
-                Log.d(TAG, "Earthquake #: "+i);
                 JSONObject currentEarthquake = newsArray.getJSONObject(i);
 
-                String sectionName = currentEarthquake.optString("sectionName");
-                String webTitle = currentEarthquake.optString("webTitle");
-                String webPublicationDate = currentEarthquake.optString("webPublicationDate");
-                String webURL = currentEarthquake.optString("webUrl");
+                String sectionName = currentEarthquake.optString(JSON_SECTION_NAME);
+                String webTitle = currentEarthquake.optString(JSON_WEB_TITLE_NAME);
+                String webPublicationDate = currentEarthquake.optString(JSON_WEB_PUBLICATION_DATE_NAME);
+                String webURL = currentEarthquake.optString(JSON_WEB_URL_NAME);
 
                 News news = new News(sectionName, webTitle, webPublicationDate, webURL);
 
@@ -144,6 +129,7 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
             // then read the input stream and parse the response.
             if (responseCode == 200) {
                 success = true;
+                Log.d(TAG, "makeHttpRequest: success response");
             } else if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                 // get redirect url from "location" header field
                 String newUrl = urlConnection.getHeaderField("Location");
@@ -173,7 +159,6 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
                 inputStream.close();
             }
         }
-        Log.d(TAG, "makeHttpRequest: jsonResponse :: "+jsonResponse);
         return jsonResponse;
     }
 
@@ -192,7 +177,7 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
                 line = reader.readLine();
             }
         }
-        Log.d(TAG, "readFromStream: "+output.toString());
+        Log.d(TAG, "readFromStream: ended");
         return output.toString();
     }
 

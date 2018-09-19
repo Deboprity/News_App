@@ -2,20 +2,23 @@ package com.example.android.newsapp;
 
 import android.app.LoaderManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,21 +27,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    private static String REQUEST_URL =
-            "http://content.guardianapis.com/search?q=debates&api-key=test";
+    private static final String REQUEST_URL = "http://content.guardianapis.com/search?q=debates&api-key=06c0e722-0793-47ab-aa2a-40c40749af63";
 
     TextView mEmptyStateTextView;
     View loadingIndicator;
-    public static ListView newsListView;
+    public ListView newsListView;
     NewsAdapter newsAdapter;
+    RelativeLayout searchLayout;
+    EditText searchTextBox;
+    Button searchButton;
+    String searchString;
 
     /**
      * Constant value for the earthquake loader ID. We can choose any integer.
      * This really only comes into play if you're using multiple loaders.
      */
     private static final int NEWS_LOADER_ID = 1;
-
-    private static Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,25 +51,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setmContext(getApplicationContext());
 
-        mEmptyStateTextView = findViewById(R.id.empty_view);
-        loadingIndicator = findViewById(R.id.loading_indicator);
-
-        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-
-        if(!isConnected){
-            loadingIndicator.setVisibility(View.GONE);
-            mEmptyStateTextView.setVisibility(View.VISIBLE);
-            mEmptyStateTextView.setText(R.string.no_news);
-            return;
-        }
-
-        // Find a reference to the {@link ListView} in the layout
-        newsListView = findViewById(R.id.list);
-        setNewsListView(newsListView);
+        initControls();
 
         // Create a new adapter that takes an empty list of news as input
         newsAdapter = new NewsAdapter(this, new ArrayList<News>());
@@ -73,27 +60,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
         newsListView.setAdapter(newsAdapter);
-
-        // Set an item click listener on the ListView, which sends an intent to a web browser
-        // to open a website with more information about the selected earthquake.
-        /*newsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Log.d(TAG, "onItemClick: started");
-                // Find the current earthquake that was clicked on
-                News currentNews = newsAdapter.getItem(position);
-
-                // Convert the String URL into a URI object (to pass into the Intent constructor)
-                Uri earthquakeUri = Uri.parse(currentNews.getWebURL());
-
-                // Create a new intent to view the earthquake URI
-                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, earthquakeUri);
-
-                // Send the intent to launch a new activity
-                startActivity(websiteIntent);
-                Log.d(TAG, "onItemClick: ended");
-            }
-        });*/
 
         // Get a reference to the LoaderManager, in order to interact with loaders.
         LoaderManager loaderManager = getLoaderManager();
@@ -103,6 +69,69 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         loaderManager.initLoader(NEWS_LOADER_ID, null, this);
 
         Log.d(TAG, "onCreate: ended");
+    }
+
+    private void initControls() {
+        mEmptyStateTextView = findViewById(R.id.empty_view);
+        loadingIndicator = findViewById(R.id.loading_indicator);
+        // Find a reference to the {@link ListView} in the layout
+        newsListView = findViewById(R.id.list);
+
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = null;
+        if (cm != null) {
+            activeNetwork = cm.getActiveNetworkInfo();
+        }
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        if(!isConnected){
+            loadingIndicator.setVisibility(View.GONE);
+            mEmptyStateTextView.setVisibility(View.VISIBLE);
+            mEmptyStateTextView.setText(R.string.no_news);
+            return;
+        }
+        setNewsListView(newsListView);
+
+        searchLayout = findViewById(R.id.search_overlay);
+        searchTextBox = findViewById(R.id.search_edit_text);
+        searchButton = findViewById(R.id.search_button);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu options from the res/menu/menu.xml file.
+        // This adds menu items to the app bar.
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // User clicked on a menu option in the app bar overflow menu
+        switch (item.getItemId()) {
+            // Respond to a click on the "Delete all entries" menu option
+            case R.id.action_search:
+                showSearchOverlay();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showSearchOverlay() {
+        searchLayout.setVisibility(View.VISIBLE);
+        newsListView.setVisibility(View.GONE);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchString = searchTextBox.getText().toString();
+                if(TextUtils.isEmpty(searchString)){
+                    Toast.makeText(getApplicationContext(), "Enter a word to search", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+            }
+        });
     }
 
     /**
@@ -183,19 +212,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.d(TAG, "onLoaderReset: ended");
     }
 
-    public static Context getmContext() {
-        return mContext;
-    }
-
-    public static void setmContext(Context mContext) {
-        MainActivity.mContext = mContext;
-    }
-
-    public static ListView getNewsListView() {
+    public ListView getNewsListView() {
         return newsListView;
     }
 
-    public static void setNewsListView(ListView newsListView) {
-        MainActivity.newsListView = newsListView;
+    public void setNewsListView(ListView newsListView) {
+        this.newsListView = newsListView;
     }
 }

@@ -32,4 +32,27 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
+    <RelativeLayout
+        android:id="@+id/search_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#88666666"
+        android:visibility="gone">
+        <EditText
+            android:id="@+id/search_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="30dp"
+            android:textColor="white"
+            tools:hint="@string/search_hint"
+            android:layout_centerInParent="true"/>
+        <Button
+            android:id="@+id/search_button"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/search_icon_edittext"
+            android:layout_centerVertical="true"
+            android:layout_alignEnd="@id/search_edit_text"/>
+    </RelativeLayout>
+
 </RelativeLayout>
