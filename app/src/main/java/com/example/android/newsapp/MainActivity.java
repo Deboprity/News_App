@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String REQUEST_URL = "http://content.guardianapis.com/search?q=debates&api-key=06c0e722-0793-47ab-aa2a-40c40749af63";
+    private static final String REQUEST_URL_BASE = "http://content.guardianapis.com";
 
     TextView mEmptyStateTextView;
     View loadingIndicator;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     String searchString;
 
     /**
-     * Constant value for the earthquake loader ID. We can choose any integer.
+     * Constant value for the news loader ID. We can choose any integer.
      * This really only comes into play if you're using multiple loaders.
      */
     private static final int NEWS_LOADER_ID = 1;
@@ -124,12 +125,64 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                searchString = searchTextBox.getText().toString();
+                searchString = searchTextBox.getText().toString().trim();
+                searchLayout.setVisibility(View.GONE);
+                newsListView.setVisibility(View.VISIBLE);
                 if(TextUtils.isEmpty(searchString)){
                     Toast.makeText(getApplicationContext(), "Enter a word to search", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                Toast.makeText(getApplicationContext(), searchString, Toast.LENGTH_SHORT).show();
 
+                //return new NewsLoader(getApplicationContext(), uriBuilder.toString());
+                LoaderManager.LoaderCallbacks<List<News>> mLoaderCallback = new LoaderManager.LoaderCallbacks<List<News>>() {
+                    @Override
+                    public Loader<List<News>> onCreateLoader(int i, Bundle bundle) {
+                        Log.d(TAG, "RESET :: onCreateLoader: started");
+                        String searchURL = REQUEST_URL_BASE+"/search?q="+searchString+"&api-key=06c0e722-0793-47ab-aa2a-40c40749af63";
+                        Uri searchUri = Uri.parse(searchURL);
+                        Uri.Builder uriBuilder = searchUri.buildUpon();
+                        Log.d(TAG, "RESET :: onCreateLoader: ended");
+                        return new NewsLoader(getApplicationContext(), uriBuilder.toString());
+                    }
+
+                    @Override
+                    public void onLoadFinished(Loader<List<News>> loader, List<News> newsList) {
+                        Log.d(TAG, "RESET :: onLoadFinished: started");
+
+                        // Hide loading indicator because the data has been loaded
+                        loadingIndicator.setVisibility(View.GONE);
+
+                        // Clear the adapter of previous news data
+                        newsAdapter.clear();
+
+                        if (newsList == null || newsList.size() == 0) {
+                            // Set empty state text to display "No news found."
+                            mEmptyStateTextView.setVisibility(View.VISIBLE);
+                            mEmptyStateTextView.setText(R.string.no_news);
+                            return;
+                        }else{
+                            Log.d(TAG, "RESET :: onPostExecute: newsList.size() :: "+newsList.size());
+                            newsAdapter.addAll(newsList);
+                        }
+                        // Find a reference to the {@link ListView} in the layout
+                        ListView newsListView = getNewsListView();
+
+                        // Set the adapter on the {@link ListView}
+                        // so the list can be populated in the user interface
+                        newsListView.setAdapter(newsAdapter);
+                        Log.d(TAG, "RESET :: onLoadFinished: ended");
+                    }
+
+                    @Override
+                    public void onLoaderReset(Loader<List<News>> loader) {
+                        Log.d(TAG, "RESET :: onLoaderReset: started");
+                        // Clear the adapter of previous news data
+                        newsAdapter.clear();
+                        Log.d(TAG, "RESET :: onLoaderReset: ended");
+                    }
+                };
+                getLoaderManager().restartLoader(NEWS_LOADER_ID, null, mLoaderCallback);
             }
         });
     }
@@ -145,24 +198,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public Loader<List<News>> onCreateLoader(int id, Bundle args) {
         Log.d(TAG, "onCreateLoader: started");
 
-        /*SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String minMagnitude = sharedPrefs.getString(
-                getString(R.string.settings_min_magnitude_key),
-                getString(R.string.settings_min_magnitude_default));
-
-        String orderBy = sharedPrefs.getString(
-                getString(R.string.settings_order_by_key),
-                getString(R.string.settings_order_by_default));
-*/
         Uri baseUri = Uri.parse(REQUEST_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
-/*
-
-        uriBuilder.appendQueryParameter("format", "geojson");
-        uriBuilder.appendQueryParameter("limit", "10");
-        uriBuilder.appendQueryParameter("minmag", minMagnitude);
-        uriBuilder.appendQueryParameter("orderby", orderBy);
-*/
 
         Log.d(TAG, "onCreateLoader: ended");
         return new NewsLoader(this, uriBuilder.toString());
@@ -176,16 +213,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Hide loading indicator because the data has been loaded
         loadingIndicator.setVisibility(View.GONE);
 
-        // Clear the adapter of previous earthquake data
+        // Clear the adapter of previous news data
         newsAdapter.clear();
 
         if (newsList == null || newsList.size() == 0) {
-            // Set empty state text to display "No earthquakes found."
+            // Set empty state text to display "No news found."
             mEmptyStateTextView.setVisibility(View.VISIBLE);
             mEmptyStateTextView.setText(R.string.no_news);
             return;
         }else{
-            Log.d(TAG, "onPostExecute: earthquakes.size() :: "+newsList.size());
+            Log.d(TAG, "onPostExecute: newsList.size() :: "+newsList.size());
             newsAdapter.addAll(newsList);
         }
         // Find a reference to the {@link ListView} in the layout
@@ -207,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<List<News>> loader) {
         Log.d(TAG, "onLoaderReset: started");
-        // Clear the adapter of previous earthquake data
+        // Clear the adapter of previous news data
         newsAdapter.clear();
         Log.d(TAG, "onLoaderReset: ended");
     }

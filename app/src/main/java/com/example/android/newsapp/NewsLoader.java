@@ -117,13 +117,15 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
-            urlConnection.setReadTimeout(10000 /* milliseconds */);
-            urlConnection.setConnectTimeout(15000 /* milliseconds */);
+            urlConnection.setReadTimeout(60000 /* milliseconds */);
+            urlConnection.setConnectTimeout(100000 /* milliseconds */);
             urlConnection.connect();
 
             Boolean success = false;
 
             int responseCode  = urlConnection.getResponseCode();
+
+            Log.d(TAG, "makeHttpRequest: responseCode :: "+responseCode);
 
             // If the request was successful (response code 200),
             // then read the input stream and parse the response.
@@ -136,8 +138,8 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
 
                 urlConnection = (HttpURLConnection) new URL(newUrl).openConnection();
                 urlConnection.setRequestMethod("GET");
-                urlConnection.setReadTimeout(10000 /* milliseconds */);
-                urlConnection.setConnectTimeout(15000 /* milliseconds */);
+                urlConnection.setReadTimeout(60000 /* milliseconds */);
+                urlConnection.setConnectTimeout(100000 /* milliseconds */);
                 urlConnection.connect();
                 Log.d(TAG, "makeHttpRequest: newUrl :: "+newUrl);
                 success = true;
@@ -159,6 +161,7 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
                 inputStream.close();
             }
         }
+        Log.d(TAG, "makeHttpRequest: jsonResponse :: "+jsonResponse);
         return jsonResponse;
     }
 
