@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if(!isConnected){
             loadingIndicator.setVisibility(View.GONE);
             mEmptyStateTextView.setVisibility(View.VISIBLE);
-            mEmptyStateTextView.setText(R.string.no_news);
+            mEmptyStateTextView.setText(R.string.no_internet);
             return;
         }
         setNewsListView(newsListView);
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 searchLayout.setVisibility(View.GONE);
                 newsListView.setVisibility(View.VISIBLE);
                 if(TextUtils.isEmpty(searchString)){
-                    Toast.makeText(getApplicationContext(), "Enter a word to search", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.toast_empty_search_string, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 Toast.makeText(getApplicationContext(), searchString, Toast.LENGTH_SHORT).show();

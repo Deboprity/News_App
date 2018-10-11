@@ -2,7 +2,9 @@
     <string name="app_name">News App</string>
 
     <string name="no_news">No News Found</string>
+    <string name="no_internet">Please connect to internet and try again</string>
 
     <string name="action_search">Search</string>
-    <string name="search_hint">Type the news you want to search</string>
+    <string name="search_hint">Type the news you want to search and click the search icon</string>
+    <string name="toast_empty_search_string">Enter a word to search and click the search icon</string>
 </resources>
